@@ -11,14 +11,8 @@ import { LoginPage, UsersPage } from '../pages';
 const AppRouter = () => (
   <Router>
     <Routes>
-      <Route
-        path={ROUTES.LOGIN}
-        element={<LoginPage />}
-      />
-      <Route
-        path={ROUTES.USERS}
-        element={<UsersPage />}
-      />
+      <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+      <Route path={ROUTES.USERS} element={<UsersPage />} />
       <Route path="*" element={<Navigate to={ROUTES.LOGIN} />} />
     </Routes>
   </Router>

@@ -11,7 +11,7 @@ const theme = createTheme({
   spacing: 1,
   breakpoints,
   components,
-  typography
+  typography,
 });
 
 // Export theme
