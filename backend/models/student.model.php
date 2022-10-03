@@ -2,15 +2,15 @@
 
 class Student extends BaseModel
 {
-    public function getStudents(int $start, int $limit): array
+    public function get_students(int $start, int $limit): array
     {
-        $queryResult = $this->mysqli->query("
+        $query_result = $this->mysqli->query("
             SELECT *
             FROM students
             ORDER BY id
             LIMIT {$limit} OFFSET {$start}
         ");
 
-        return $this->getList($queryResult);
+        return $this->get_list($query_result);
     }
 }

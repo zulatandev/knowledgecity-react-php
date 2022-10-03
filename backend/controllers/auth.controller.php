@@ -2,15 +2,13 @@
 
 class AuthController extends BaseController
 {
-    const LIMIT = 3;
-
-    private User $userModel;
-    private Token $tokenModel;
+    private User $user_model;
+    private Token $token_model;
 
     public function __construct()
     {
-        $this->userModel = new User();
-        $this->tokenModel = new Token();
+        $this->user_model = new User();
+        $this->token_model = new Token();
     }
 
     public function __invoke()
@@ -19,29 +17,56 @@ class AuthController extends BaseController
             $username = $_POST['username'];
             $password = $_POST['password'];
             $this->login($username, $password);
-        }
-
-        if (isset($_POST['delete'])) {
+        } elseif (isset($_POST['delete'])) {
             $this->logout();
+        } elseif (isset($_GET['me'])) {
+            $this->me();
+        } else {
+            $this->render_json(false);
         }
     }
 
     private function login(string $username, string $password)
     {
-        $user = $this->userModel->getUser($username);
-        echo json_encode($user);
+        $user = $this->user_model->get_user($username);
 
         if ($user) {
-            $hashed_token = hash('ripemd160', $username . $password . date('l jS \of F Y h:i:s A'));
-            $token = $this->tokenModel->createToken($hashed_token);
-            if ($token) {
-                echo json_encode($hashed_token);
+            $token = $this->token_model->get_token_by_user_id($user['id']);
+            if (!$token) {
+                $hashed_token = hash('ripemd160', $username . $password . date('l jS \of F Y h:i:s A'));
+                $result = $this->token_model->create_token($hashed_token, $user['id']);
+                if ($result) {
+                    $this->render_json(true, ['token' => $hashed_token]);
+                }
+            } else {
+                $this->render_json(true, ['token' => $token['token']]);
             }
+        } else {
+            $this->render_json(false);
         }
     }
 
     private function logout()
     {
-        echo 'logout';
+        $bearer_token = $this->get_bearer_token();
+        if ($bearer_token) {
+            $this->token_model->remove_token($bearer_token);
+
+            $this->render_json(true);
+        } else {
+            $this->render_json(false);
+        }
+    }
+
+    private function me()
+    {
+        $bearer_token = $this->get_bearer_token();
+        if ($bearer_token) {
+            $token = $this->token_model->get_token($bearer_token);
+
+            $this->render_json(true, ['token' => $token['token']]);
+        } else {
+            $this->render_json(false);
+        }
     }
 }

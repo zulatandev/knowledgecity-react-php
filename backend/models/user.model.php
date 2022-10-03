@@ -2,12 +2,10 @@
 
 class User extends BaseModel
 {
-    public function getUser(string $username): ?array
+    public function get_user(string $username): ?array
     {
-        $sql = "SELECT * FROM students WHERE username={$username}";
+        $query_result = $this->mysqli->query("SELECT * FROM users WHERE username='{$username}';");
 
-        $queryResult = $this->mysqli->query($sql);
-
-        return $this->getSingle($queryResult);
+        return $this->get_single($query_result);
     }
 }
