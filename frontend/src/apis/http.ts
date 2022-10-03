@@ -2,24 +2,28 @@
 import axios, { AxiosRequestConfig, Method } from 'axios';
 
 // Constants
-import { API_SERVER } from '../constants';
+import { API_SERVER, TOKEN_KEY } from '../constants';
 
 // Create http using axios
-const http = axios.create({ baseURL: `${API_SERVER}/api` });
+const http = axios.create({ baseURL: API_SERVER });
 
 // Create request
-const request = (method: Method, url: string, options: AxiosRequestConfig) =>
-  http
+const request = (method: Method, url: string, options: AxiosRequestConfig) => {
+  const token = localStorage.getItem(TOKEN_KEY);
+
+  return http
     .request({
       ...options,
       method,
       url,
       headers: {
+        Authorization: `Bearer ${token}`,
         ...options.headers,
       },
     })
     .then(httpResponseHandler)
     .catch(httpErrorHandler);
+};
 
 const httpResponseHandler = (response) => {
   return response.data;

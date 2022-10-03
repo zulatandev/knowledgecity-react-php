@@ -1,9 +1,17 @@
 // Dependencies
-import { FC } from 'react';
+import { FC, SyntheticEvent, useContext, useState } from 'react';
 import { Box, Button, Checkbox, FormControlLabel, InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import { Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { KeyboardArrowRight, Lock, Person } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+
+// Apis
+import api from '../../apis';
+
+// Global constants
+import { REMEMBER_KEY, ROUTES, TOKEN_KEY } from '../../constants';
+import { AppContext } from '../../context';
 
 // Validation schema
 export const validationSchema = Yup.object().shape({
@@ -11,10 +19,48 @@ export const validationSchema = Yup.object().shape({
   password: Yup.string().required('Required Field!'),
 });
 
+// Interfaces
+interface ILoginData {
+  username: string;
+  password: string;
+}
+
 // Export login page
 export const LoginPage: FC = () => {
+  // States
+  const [isRememberMe, setIsRememberMe] = useState(false);
+
+  // Get navigate from hook
+  const navigate = useNavigate();
+
+  // Get context
+  const { setAccount } = useContext(AppContext);
+
+  // Remember handler
+  const handleRemember = (_: SyntheticEvent<Element, Event>, checked: boolean) => {
+    setIsRememberMe(checked);
+  };
+
   // Submit handler
-  const handleSubmit = () => {};
+  const handleSubmit = (values: ILoginData) => {
+    const formData = new FormData();
+    Object.entries(values).forEach(([key, value]) => {
+      formData.set(key, value);
+    });
+    api.auth
+      .login(formData)
+      .then((res) => {
+        if (res.success) {
+          const token = res.data.token;
+          setAccount({});
+          localStorage.setItem(TOKEN_KEY, token);
+          localStorage.setItem(REMEMBER_KEY, JSON.stringify(isRememberMe));
+
+          navigate(ROUTES.USERS);
+        }
+      })
+      .catch((err) => console.log(err));
+  };
 
   // Return login page
   return (
@@ -84,9 +130,9 @@ export const LoginPage: FC = () => {
                   onBlur={handleBlur}
                   onChange={handleChange}
                 />
-                <FormControlLabel control={<Checkbox defaultChecked />} label="Remember me" />
+                <FormControlLabel control={<Checkbox defaultChecked />} label="Remember me" checked={isRememberMe} onChange={handleRemember} />
               </Stack>
-              <Button endIcon={<KeyboardArrowRight />} sx={{ borderRadius: 21 }}>
+              <Button type="submit" endIcon={<KeyboardArrowRight />} sx={{ borderRadius: 21 }}>
                 Log In
               </Button>
             </Stack>

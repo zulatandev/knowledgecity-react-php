@@ -7,11 +7,14 @@ import AppRouter from './router';
 
 // Theme
 import theme from './theme';
+import AppProvider from './context';
 
 // Create app
 const App = () => (
   <ThemeProvider theme={theme}>
-    <AppRouter />
+    <AppProvider>
+      <AppRouter />
+    </AppProvider>
   </ThemeProvider>
 );
 
